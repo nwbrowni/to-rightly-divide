@@ -1,5 +1,14 @@
 use super::reference::Reference;
 
+#[derive(Clone, Copy)]
+pub enum SearchMethod {
+    Exact,
+    Caseless,
+    Substring,
+    Reference,
+    All,
+}
+
 #[derive(Clone)]
 pub struct Verse {
     reference: Reference,
@@ -22,15 +31,15 @@ impl Verse {
         self.content.clone()
     }
 
-    pub fn exact_search<'b>(&self, query: &'b str) -> bool {
+    fn exact_search<'b>(&self, query: &'b str) -> bool {
         self.content.contains(query)
     }
 
-    pub fn caseless_search<'b>(&self, query: &'b str) -> bool {
+    fn caseless_search<'b>(&self, query: &'b str) -> bool {
         self.content.to_lowercase().contains(query.to_lowercase().as_str())
     }
 
-    pub fn substring_search<'b>(&self, query: &'b str) -> bool {
+    fn substring_search<'b>(&self, query: &'b str) -> bool {
         let words: Vec<&str> = query.split(' ').collect();
         let mut subs_found = 0;
         let words_len = words.len();
@@ -44,12 +53,12 @@ impl Verse {
         return false
     }
 
-    pub fn reference_search<'b>(&self, query: &'b str) -> bool {
+    fn reference_search<'b>(&self, query: &'b str) -> bool {
         let spaces: Vec<&str> = query.split(" ").collect();
         if spaces.len() < 2 { return false; }
         let book = spaces[0].to_string();
         let semi: Vec<&str> = spaces[1].split(":").collect();
-        if semi.len() < 2 { return false; }
+        if semi.len() < 2 { return false; }  // might want to return whole chapter here
         let chapter;
         match semi[1].to_string().parse::<u8>() {
             Ok(n) => { chapter = n; }
@@ -68,15 +77,35 @@ impl Verse {
         return all_good
     }
 
-    pub fn search<'b>(&self, query: &'b str) -> bool {
-        let mut found = false;
-        found |= self.exact_search(query);
-        if found { return found }
-        found |= self.caseless_search(query);
-        if found { return found }
-        found |= self.substring_search(query);
-        if found { return found }
-        found |= self.reference_search(query);
-        return found
+    // pub fn search<'b>(&self, query: &'b str) -> bool {
+    //     let mut found = false;
+    //     found |= self.exact_search(query);
+    //     if found { return found }
+    //     found |= self.caseless_search(query);
+    //     if found { return found }
+    //     found |= self.substring_search(query);
+    //     if found { return found }
+    //     found |= self.reference_search(query);
+    //     return found
+    // }
+
+    pub fn search<'b>(&self, method: SearchMethod, query: &'b str) -> bool {
+        match method {
+            SearchMethod::Exact => self.exact_search(query),
+            SearchMethod::Caseless => self.caseless_search(query),
+            SearchMethod::Substring => self.substring_search(query),
+            SearchMethod::Reference => self.reference_search(query),
+            SearchMethod::All => {
+                let mut found = false;
+                found |= self.exact_search(query);
+                if found { return found }
+                found |= self.caseless_search(query);
+                if found { return found }
+                found |= self.substring_search(query);
+                if found { return found }
+                found |= self.reference_search(query);
+                return found
+            }, 
+        }
     }
 }

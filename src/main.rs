@@ -1,6 +1,6 @@
 use std::env;
 
-use to_rightly_divide::bible::Bible;
+use to_rightly_divide::bible::{verse, Bible};
 
 /*
 try: cargo run -- --reference "Genesis 1:1" (example)
@@ -8,7 +8,8 @@ try: cargo run -- --reference "Genesis 1:1" (example)
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let b = Bible::new_from_file("kjv", "./KJV.bible");
+    //let b2 = Bible::new_from_file("kjv", "./KJV.bible");
+    let b2 = Bible::new_from_file("kjv", "./KJV.bible");
     //for verse in b.search("In the beginning") { println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content()); }
     //for verse in b.search("Genesis 1:1") { println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content()); }
 
@@ -33,45 +34,30 @@ fn main() {
                 println!("Thank you for using 'To Rightly Divide'");
             },
             _ => {
-                for verse in b.search(args[1].as_str()) {
+                for verse in b2.search(verse::SearchMethod::All, args[1].as_str()) {
                     println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
                 }
             }
         }
     }
     else if args.len() == 3 {
+        let method;
         match args[1].as_str() {
-            "--caseless" => {
-                for verse in b.caseless_search(args[2].as_str()) {
-                    println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
-                }
+            "--caseless" => method = verse::SearchMethod::Caseless,
+            "--exact" => method = verse::SearchMethod::Exact,
+            "--reference" => method = verse::SearchMethod::Reference,
+            "--search" => method = verse::SearchMethod::All,
+            "--substring" => method = verse::SearchMethod::Substring,
+            _ => { 
+                println!("Invalid tag provided. Use tag '--help' for information regarding valid tags.");
+                return
             },
-            "--exact" => {
-                for verse in b.exact_search(args[2].as_str()) {
-                    println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
-                }
-            },
-            "--reference" => {
-                for verse in b.reference_search(args[2].as_str()) {
-                    println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
-                }
-            },
-            "--search" => {
-                for verse in b.search(args[2].as_str()) {
-                    println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
-                }
-            },
-            "--substring" => {
-                for verse in b.substring_search(args[2].as_str()) {
-                    println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
-                }
-            },
-            _ => { println!("Invalid tag provided. Use tag '--help' for information regarding valid tags."); },
+        }
+        for verse in b2.search(method, args[2].as_str()) {
+            println!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content());
         }
     }
     else { println!("Too many arguments provided. Max number of arguments is two."); }
-
-    
 }
 
 /*
