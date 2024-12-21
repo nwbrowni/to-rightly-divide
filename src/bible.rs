@@ -8,6 +8,7 @@ pub mod reference;
 pub mod verse;
 pub mod chapter;
 pub mod book;
+pub mod passage;
 
 #[derive(Clone)]
 pub struct Bible {
@@ -31,7 +32,7 @@ impl Bible {
     }
 
     pub fn new_from_file<'b>(version: &'b str, file: &'b str) -> Self {
-        let mut bible2 = Bible::default(version);
+        let mut bible = Bible::default(version);
 
         // read in and parse all verses from file
         match File::open(file) {
@@ -56,7 +57,7 @@ impl Bible {
                             panic!()
                         }
                     }
-                    bible2.add_verse(&Verse::new(Reference::new(book.as_str(), ch, v), pipes[2]));
+                    bible.add_verse(&Verse::new(Reference::new(book.as_str(), ch, v), pipes[2]));
                 }
             },
             Err(_) => {
@@ -65,8 +66,8 @@ impl Bible {
             }
         }
         Self {
-            version: bible2.version.clone(),
-            books: bible2.books.clone(),
+            version: bible.version.clone(),
+            books: bible.books.clone(),
         }
     }
 
