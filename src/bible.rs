@@ -4,6 +4,8 @@ use book::Book;
 use reference::Reference;
 use verse::Verse;
 
+use crate::utilities::logging::GENERAL;
+
 pub mod reference;
 pub mod verse;
 pub mod chapter;
@@ -88,12 +90,19 @@ impl Bible {
     }
 
     pub fn search<'b>(&self, method: verse::SearchMethod, query: &'b str) -> Vec<Verse> {
+        GENERAL.information(format!("Starting search for '{}'", query).as_str());
         let mut found = Vec::new();
         for book in &self.books {
             for verse in book.search(method, query) {
                 found.push(verse.clone());
             }
         }
+        let mut message= format!("Search for '{}' returned {} results:\n", query, found.len());
+        for verse in &found {
+            message += format!("{} {}:{} \"{}\"", verse.reference().book(), verse.reference().chapter(), verse.reference().verse(), verse.content()).as_str();
+            message += "\n";
+        }
+        GENERAL.information(message.as_str());
         return found;
     }
 }
