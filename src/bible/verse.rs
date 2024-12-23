@@ -69,7 +69,7 @@ impl Verse {
 
     fn reference_search<'b>(&self, query: &'b str) -> bool {
         let spaces: Vec<&str> = query.split(" ").collect();
-        if spaces.len() != 2 { return false; }
+        if spaces.len() != 2 { return false; }  // this doesn't work for numbered books
         let book = spaces[0].to_string();
         let semi: Vec<&str> = spaces[1].split(":").collect();
         if semi.len() < 1 { return false; }  // might want to return whole chapter here
